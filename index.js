@@ -65,13 +65,8 @@ client.on('connect', () => {
 })
 
 client.on('message', (topic, message, packet) => {
-  console.log("!!!!");
-  console.log(topic);
-  console.log("----");
-  console.log(packet);
-  console.log("####");
   if(subscribtionHandleArray[topic]){
-    subscribtionHandleArray[topic](message,topic)
+    subscribtionHandleArray[topic](topic,message)
   }
 })
 
