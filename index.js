@@ -46,14 +46,14 @@ influx.getDatabaseNames()
   })
 
 var subscribtionsObject = [
-  {"id" : 1, "topic": "diyww/shop/stockinfo", "handler" : handleShopsystem},
-  {"id" : 2, "topic": "diyww/lounge/kuehlschrank/kuehlschrank", "handler" : handleKuehlschrank},
-  {"id" : 3, "topic": "diyww/lounge/kuehlschrank/gefrierschrank", "handler" : handleGefrierschrank},
-  {"id" : 4, "topic": "diyww/+/heizung/#", "handler" : handeHeizkoerper}
+  { "topic": "diyww/shop/stockinfo", "handler" : handleShopsystem},
+  { "topic": "diyww/lounge/kuehlschrank/kuehlschrank", "handler" : handleKuehlschrank},
+  { "topic": "diyww/lounge/kuehlschrank/gefrierschrank", "handler" : handleGefrierschrank},
+  { "topic": "diyww/+/heizung/#", "handler" : handeHeizkoerper}
 ]
 var subscribtionHandleArray = []
 subscribtionsObject.forEach(function (value) {
-  subscribtionHandleArray[value.id] = value.handler;
+  subscribtionHandleArray[value.topic] = value.handler;
     //your iterator
 })
 
@@ -67,6 +67,14 @@ client.on('connect', () => {
 client.on('message', (topic, message, packet) => {
   if(subscribtionHandleArray[topic]){
     subscribtionHandleArray[topic](topic,message)
+  } else {
+    for(let row in subscribtionsObject){
+      var regex = subscribtionsObject[row].topic.replace("+",".*").replace("#",".*");
+      if(topic.match(regex)){
+        console.log(subscribtionsObject[row]);
+    }
+  }
+}
   }
 })
 
