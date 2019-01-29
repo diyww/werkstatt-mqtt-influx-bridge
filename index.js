@@ -23,6 +23,17 @@ const influx = new Influx.InfluxDB({
         guestprice: Influx.FieldType.FLOAT
       },
       tags: ['ean','name','category']
+    },
+    {
+      measurement: 'heizkoerper',
+      fields: {
+        temperature: Influx.FieldType.FLOAT,
+        targetTemperature: Influx.FieldType.FLOAT,
+        valvePostiton: Influx.FieldType.INTEGER,
+        room: Influx.FieldType.STRING,
+        valveNumber: Influx.FieldType.INTEGER
+      },
+      tags: ['room']
     }
   ]
 })
@@ -35,13 +46,14 @@ influx.getDatabaseNames()
   })
 
 var subscribtionsObject = [
-  {"topic": "diyww/shop/stockinfo", "handler" : handleShopsystem},
-  {"topic": "diyww/lounge/kuehlschrank/kuehlschrank", "handler" : handleKuehlschrank},
-  {"topic": "diyww/lounge/kuehlschrank/gefrierschrank", "handler" : handleGefrierschrank}
+  {"id" : 1, "topic": "diyww/shop/stockinfo", "handler" : handleShopsystem},
+  {"id" : 2, "topic": "diyww/lounge/kuehlschrank/kuehlschrank", "handler" : handleKuehlschrank},
+  {"id" : 3, "topic": "diyww/lounge/kuehlschrank/gefrierschrank", "handler" : handleGefrierschrank},
+  {"id" : 4, "topic": "diyww/+/heizung/#", "handler" : handeHeizkoerper}
 ]
 var subscribtionHandleArray = []
 subscribtionsObject.forEach(function (value) {
-  subscribtionHandleArray[value.topic] = value.handler;
+  subscribtionHandleArray[value.id] = value.handler;
     //your iterator
 })
 
@@ -52,13 +64,34 @@ client.on('connect', () => {
   client.subscribe('#')
 })
 
-client.on('message', (topic, message) => {
+client.on('message', (topic, message, packet) => {
+  console.log("!!!!");
+  console.log(topic);
+  console.log("----");
+  console.log(packet);
+  console.log("####");
   if(subscribtionHandleArray[topic]){
-    subscribtionHandleArray[topic](message)
+    subscribtionHandleArray[topic](message,topic)
   }
 })
 
-function handleShopsystem(message) {
+function handeHeizkoerper(topic,message) {
+  var msg = JSON.parse(message)
+  msg.forEach(function (item) {
+    console.log(item)
+    influx.writePoints([
+        {
+          measurement: 'heizkoerper',
+          tags: { ean: item.ean, name: item.name, category: item.category },
+          fields: { amount: item.amount, memberprice: item.memberprice, guestprice: item.guestprice}
+        }
+      ]).catch(err => {
+        console.error(`Error saving data to InfluxDB! ${err.stack}`)
+      })
+  })
+}
+
+function handleShopsystem(topic,message) {
   var msg = JSON.parse(message)
   msg.forEach(function (item) {
     console.log(item)
@@ -72,11 +105,9 @@ function handleShopsystem(message) {
         console.error(`Error saving data to InfluxDB! ${err.stack}`)
       })
   })
-
-
 }
 
-function handleKuehlschrank(message) {
+function handleKuehlschrank(topic,message) {
   var msg = JSON.parse(message)
   influx.writePoints([
       {
@@ -89,7 +120,7 @@ function handleKuehlschrank(message) {
     })
 }
 
-function handleGefrierschrank(message) {
+function handleGefrierschrank(topic,message) {
   var msg = JSON.parse(message)
   influx.writePoints([
       {
