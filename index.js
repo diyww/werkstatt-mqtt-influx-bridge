@@ -69,7 +69,7 @@ client.on('message', (topic, message, packet) => {
     for(let row in subscribtionsObject){
       var regex = subscribtionsObject[row].topic.replace("+",".*").replace("#",".*");
       if(topic.match(regex)){
-        subscribtionsObject[row](topic,message);
+        subscribtionHandleArray[subscribtionsObject[row]](topic,message);
       }
     }
   }
