@@ -80,11 +80,7 @@ function handeThermostate(topic,message) {
   var result = topic.match(".*\/(.*)\/thermostat\/([0-9])")
   var room = result[1]
   var valveNumber = result[2]
-  console.log(msg)
-  console.log(result)
-  console.log(room)
-  console.log(valveNumber)
-  /*
+  
    influx.writePoints([
       {
         measurement: 'thermostate',
@@ -93,7 +89,7 @@ function handeThermostate(topic,message) {
       }
     ]).catch(err => {
       console.error(`Error saving data to InfluxDB! ${err.stack}`)
-    })*/
+    })
 }
 
 function handleShopsystem(topic,message) {
