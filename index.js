@@ -25,15 +25,13 @@ const influx = new Influx.InfluxDB({
       tags: ['ean','name','category']
     },
     {
-      measurement: 'heizkoerper',
+      measurement: 'thermostate',
       fields: {
         temperature: Influx.FieldType.FLOAT,
-        targetTemperature: Influx.FieldType.FLOAT,
-        valvePostiton: Influx.FieldType.INTEGER,
-        room: Influx.FieldType.STRING,
-        valveNumber: Influx.FieldType.INTEGER
+        desired: Influx.FieldType.FLOAT,
+        valve: Influx.FieldType.INTEGER
       },
-      tags: ['room']
+      tags: ['room','valveNumber']
     }
   ]
 })
@@ -49,7 +47,7 @@ var subscribtionsObject = [
   { "topic": "diyww/shop/stockinfo", "handler" : handleShopsystem},
   { "topic": "diyww/lounge/kuehlschrank/kuehlschrank", "handler" : handleKuehlschrank},
   { "topic": "diyww/lounge/kuehlschrank/gefrierschrank", "handler" : handleGefrierschrank},
-  { "topic": "diyww/+/heizung/#", "handler" : handeHeizkoerper}
+  { "topic": "diyww/+/thermostat/#", "handler" : handeThermostate}
 ]
 var subscribtionHandleArray = []
 subscribtionsObject.forEach(function (value) {
@@ -77,20 +75,23 @@ client.on('message', (topic, message, packet) => {
   }
 })
 
-function handeHeizkoerper(topic,message) {
+function handeThermostate(topic,message) {
   var msg = JSON.parse(message)
-  msg.forEach(function (item) {
-    console.log(item)
-    influx.writePoints([
-        {
-          measurement: 'heizkoerper',
-          tags: { ean: item.ean, name: item.name, category: item.category },
-          fields: { amount: item.amount, memberprice: item.memberprice, guestprice: item.guestprice}
-        }
-      ]).catch(err => {
-        console.error(`Error saving data to InfluxDB! ${err.stack}`)
-      })
-  })
+  var room = "test"
+  var valveNumber = "1"
+  console.log(msg)
+  console.log(room)
+  console.log(valveNumber)
+  /*
+   influx.writePoints([
+      {
+        measurement: 'thermostate',
+        tags: { room: room, valveNumber: valveNumber},
+        fields: { temperature: msg.temperature, desired: msg.desired, valve: msg.valve}
+      }
+    ]).catch(err => {
+      console.error(`Error saving data to InfluxDB! ${err.stack}`)
+    })*/
 }
 
 function handleShopsystem(topic,message) {
