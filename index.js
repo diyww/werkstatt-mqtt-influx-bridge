@@ -97,7 +97,6 @@ function handeThermostate(topic,message) {
 function handleShopsystem(topic,message) {
   var msg = JSON.parse(message)
   msg.forEach(function (item) {
-    console.log(item)
     influx.writePoints([
         {
           measurement: 'shopsystemstock',
