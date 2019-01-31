@@ -81,6 +81,7 @@ function handeThermostate(topic,message) {
   var room = result[0]
   var valveNumber = result[1]
   console.log(msg)
+  console.log(result)
   console.log(room)
   console.log(valveNumber)
   /*
