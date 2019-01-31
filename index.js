@@ -85,7 +85,7 @@ function handeThermostate(topic,message) {
       {
         measurement: 'thermostate',
         tags: { room: room, valveNumber: valveNumber},
-        fields: { temperature: msg.temperature, desired: msg.desired, valve: msg.valve}
+        fields: { temperature: msg.temp, desired: msg.desired, valve: msg.valve}
       }
     ]).catch(err => {
       console.error(`Error saving data to InfluxDB! ${err.stack}`)
