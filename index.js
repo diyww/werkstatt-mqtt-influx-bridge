@@ -77,7 +77,7 @@ client.on('message', (topic, message, packet) => {
 
 function handeThermostate(topic,message) {
   var msg = JSON.parse(message)
-  var result = topic.match(.*\/(.*)\/thermostat\/([0-9]))
+  var result = topic.match(".*\/(.*)\/thermostat\/([0-9])")
   var room = result[0]
   var valveNumber = result[1]
   console.log(msg)
