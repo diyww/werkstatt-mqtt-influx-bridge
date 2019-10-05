@@ -32,6 +32,13 @@ const influx = new Influx.InfluxDB({
         valve: Influx.FieldType.INTEGER
       },
       tags: ['room','valveNumber']
+    },
+    {
+      measurement: 'aussentemperatur',
+      fields: {
+        temperature: Influx.FieldType.FLOAT,
+      },
+      tags: ['source']
     }
   ]
 })
@@ -47,7 +54,8 @@ var subscribtionsObject = [
   { "topic": "diyww/shop/stockinfo", "handler" : handleShopsystem},
   { "topic": "diyww/lounge/kuehlschrank/kuehlschrank", "handler" : handleKuehlschrank},
   { "topic": "diyww/lounge/kuehlschrank/gefrierschrank", "handler" : handleGefrierschrank},
-  { "topic": "diyww/+/thermostat/#", "handler" : handeThermostate}
+  { "topic": "diyww/+/thermostat/#", "handler" : handleThermostate},
+  { "topic": "diyww/aussentemperatur/#", "handler" : handleAussentemperatur}
 ]
 var subscribtionHandleArray = []
 subscribtionsObject.forEach(function (value) {
@@ -75,12 +83,12 @@ client.on('message', (topic, message, packet) => {
   }
 })
 
-function handeThermostate(topic,message) {
+function handleThermostate(topic,message) {
   var msg = JSON.parse(message)
   var result = topic.match(".*\/(.*)\/thermostat\/([0-9])")
   var room = result[1]
   var valveNumber = result[2]
-  
+
    influx.writePoints([
       {
         measurement: 'thermostate',
@@ -127,6 +135,21 @@ function handleGefrierschrank(topic,message) {
         measurement: 'kuehlschrank',
         tags: { host: 'gefrierschrank' },
         fields: { temperature: msg.temperature, humidity: msg.humidity, door: false}
+      }
+    ]).catch(err => {
+      console.error(`Error saving data to InfluxDB! ${err.stack}`)
+    })
+}
+
+function handleAussentemperatur(topic,message) {
+  var msg = JSON.parse(message)
+  var result = topic.match(".*\/aussentemperatur\/(.*)")
+  var source = result[1]
+  influx.writePoints([
+      {
+        measurement: 'aussentemperatur',
+        tags: { source: source},
+        fields: { temperature: msg.temp}
       }
     ]).catch(err => {
       console.error(`Error saving data to InfluxDB! ${err.stack}`)
